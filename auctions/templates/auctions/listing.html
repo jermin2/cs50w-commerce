@@ -1,0 +1,135 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% if listing.winner == user %}
+    <h2>You are the winner!</h2>
+    {% endif %}
+
+    <style>
+        img {
+            min-width:300px;
+            min-height:300px;
+        }
+
+        .single-listing {
+            padding: 50px;
+            margin:auto;
+            width:75%;
+        }
+
+        .single-listing-img {
+            margin:auto;
+            width:fit-content;
+        }
+
+        table {
+            border-collapse:separate;
+            border-spacing:0 5px;
+        }
+
+        th, td {
+            padding: 5px;
+        }
+    </style>
+
+    <div class="row m-auto col-lg-8 col-md-12">
+        <div class="col-md-6 p-4" style="display:flex">
+            <div class="single-listing-img">
+                {% if listing.image %}
+                <img src="{{ listing.image }}">
+                {% else %}
+                <img src="/static/auctions/noimage.png">
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6 bg-light rounded border">
+            <h2 class="text-center p-2 my-4">{% if not listing.active %} Closed: {% endif %}{{ listing.name }}</h2>
+            
+
+            <div class="text-center">
+            {% if user.is_authenticated and listing.active %}
+                {% if listing in user.watchlist.all %}
+                    <a class="btn btn-secondary" href="{% url 'watchlist_remove' listing.id %}">Remove from watchlist</a>
+                {% else %}
+                    <a class="btn btn-primary" href="{% url 'watchlist_add' listing.id %}">Add to watchlist</a>
+                {% endif %}
+            
+                {% if user == listing.owner %}
+                    <a class="btn btn-danger" href="{% url 'close' listing.id %}">Close</a>
+                {% endif %}
+            {% endif %}
+            </div>
+
+            <hr />
+
+            <table style="width:100%">
+                <tr>
+                    <th>Description</th>
+                    <td>{{listing.description}}</td>
+                </tr>
+                <tr>
+                    <td colspan=2><hr /></td>
+                </tr>
+                <tr>
+                    <th>Category</th>
+                    <td>{{listing.category}}</td>
+                </tr>
+                <tr>
+                    <td colspan=2><hr /></td>
+                </tr>
+                <tr>
+                    <th>Current Price</th>
+                    <td class="px-2">${{ listing.current_price }}.00</td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>
+                        {% if listing.active %}
+                        <form method="post" action="{% url 'bid' listing.id %}">
+                            {% csrf_token %}
+                            <input style="width:120px" type="number" name="amount">
+                            <input type="submit" class="btn btn-primary" value="Place bid">
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th style="vertical-align:top">Bid History</th>
+                    <td>
+                        <table>
+                            {% for bid in listing.bids.all|slice:":5" %}
+                            <tr>
+                                <td class="px-2">${{bid.price}}.00</td>
+                                <td> by {{bid.user}}</td>
+                            </tr>
+                            {% empty %}
+                            No Bids
+                            {% endfor %}
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="col-lg-8 mx-auto bg-light my-3 rounded border p-3">
+        <h2>Comments</h2>
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'comment' listing.id %}">
+            {% csrf_token %}
+            <input type="text" name="comment">
+            <input type="submit" value="Comment">
+        </form>
+        {% endif %}
+
+        {% for comment in listing.comments.all %}
+        <p>{{comment}}</p>
+        {% empty %}
+        <p>No comments!</p>
+        {% endfor %}
+    </div>
+
+
+{% endblock %}

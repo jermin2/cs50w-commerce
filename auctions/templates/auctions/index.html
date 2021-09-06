@@ -1,0 +1,51 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    
+    <style>
+        .card-img-top {
+            max-width:150px;
+            max-height:150px;
+            margin: 15px;
+        }
+
+        .card {
+            align-items:center;
+            align-content:center;
+        }
+    </style>
+    <div class="container">
+        <h2>{{ title }}</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            {% for listing in listings %}
+            <div class="col p-3">
+                <div class="card h-100">
+                    
+                    {% if listing.image %}
+                    <img src="{{ listing.image }}" class="card-img-top" alt="">
+                    {% else %}
+                    <img src="static/auctions/noimage.png" class="card-img-top">
+                    {% endif %}
+
+                    <div class="card-body w-100">
+                        <a href="{% url 'listing' listing.id %}" class="">
+                            <h5 class="card-title">{{listing.name}}</h5>
+                            <p class="card-text">{{listing.description}}</p>
+                        </a>
+                    </div>
+                    <div class="card-footer w-100">
+                        <h5 class="card-text">Current Bid: ${{listing.current_price}}.00</h5>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            {% empty %}
+                <li>No Listings</li>
+            {% endfor %}
+        </div>
+    </div>
+    
+
+    
+{% endblock %}
